@@ -26,6 +26,20 @@ FusionEKF::FusionEKF() {
   TODO:
     * Finish initializing the FusionEKF.
   */
+
+  // measurement covariance
+  R_laser_ << .0225, 0,
+			  0, .0225;
+
+  R_radar_ << .09, 0, 0,
+			  0, .0009, 0,
+			  0, 0, .09;
+
+  // measurement matrix
+  H_laser_ << 1, 0, 0, 0,
+			  0, 1, 0, 0;
+
+
 }
 
 /**
