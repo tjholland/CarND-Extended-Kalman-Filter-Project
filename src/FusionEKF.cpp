@@ -95,6 +95,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
 		px = rho * cos(phi);
 		py = rho * sin(phi);
+
+		// safety, object is at location of measuring device
+		if (fabs(px) < 0.001 && fabs(py) < 0.001) {
+			px = 0.1;
+			py = 0.1;
+		}
+
 		vx = rhodot * cos(phi);
 		vy = rhodot * sin(phi);
 
@@ -105,7 +112,16 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       Initialize state.
       */
 		// grab x_ from raw measurements
-		ekf_.x_ << measurement_pack.raw_measurements_(0), measurement_pack.raw_measurements_(1), 0, 0;
+		px = measurement_pack.raw_measurements_(0);
+		py = measurement_pack.raw_measurements_(1);
+
+		// safety, object is at location of measuring device
+		if (fabs(px) < 0.001 && fabs(py) < 0.001) {
+			px = 0.1;
+			py = 0.1;
+		}
+
+		ekf_.x_ << px, py, 0, 0;
     }
 
 	// timestamp
@@ -129,6 +145,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
 	// temporary variables
 	float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
+
+	// safety, measurements are approximately coincident
+	if (dt > 0.001) {
+		ekf_.Predict();
+	}
+
 	float dt2, dt3, dt4;
 	dt2 = pow(dt, 2);
 	dt3 = pow(dt, 3);
